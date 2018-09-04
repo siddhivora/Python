@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#this program is to read values from pressure sensor using ADC MCP3008
  
 import spidev
 import time
