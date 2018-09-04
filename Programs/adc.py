@@ -6,7 +6,8 @@ import time
 
 #Define Variables
 delay = 0.02
-ldr_channel = 0
+sensor_channel = 0
+Vin = 5
 
 #Create SPI
 spi = spidev.SpiDev()
@@ -22,9 +23,9 @@ def readadc(adcnum):
     
  
 while True:
-    ldr_value = readadc(ldr_channel)
-    voltage = (ldr_value*3.3)/(float(1023))
-    print ldr_value,voltage
+    sensor_value = readadc(sensor_channel)
+    voltage = (sensor_value*Vin)/(float(1023))
+    print sensor_value,voltage
     #print "---------------------------------------"
     #print("LDR Value: %d" % ldr_value)
     time.sleep(delay)
