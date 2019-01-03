@@ -15,6 +15,7 @@ from itertools import izip
 import math
 import scipy
 from scipy import integrate
+import cnumpy
 
 #Define Variables
 delay = 0.02
@@ -43,16 +44,12 @@ while time.time() < t_end:
     voltage = (sensor_value*Vin)/(float(1023))
     voltage = round(voltage,places)
     amplitude.append(voltage)					#store the voltage value in array
-    #print sensor_value,voltage
+    print sensor_value,voltage
     time.sleep(delay)
 
 #GENERATE SINE WAVE AND PLOT THE GRAPH
 n = 10 / float(len(amplitude))
 n = round(n,4)
-
-if n < len(amplitude):
-	n1=len(amplitude)-n
-	n = n+n1
 
 t_time=np.linspace(0,10,len(amplitude))
 print n,len(t_time),len(amplitude)
@@ -61,10 +58,7 @@ print n,len(t_time),len(amplitude)
 plt.plot(t_time,amplitude)
 plt.show()
 
-#STORE THE GRAPH VALUES IN CSV FILE
-with open ("D:\\5th sem\ProjectME\Python\Programs\graph.csv",'wb') as f:
-    writer=csv.writer(f)
-    writer.writerows(izip(t_time,amplitude))
+
     
 #VOLTAGE TO PRESSURE(kPa) CONVERSION
 vol=np.asarray(amplitude)
@@ -81,11 +75,14 @@ A=math.pi*r*r               #m^2
 Flow=((2*P)/rho)+0.001
 plt.plot(t_time,Flow)
 plt.show()
-#Flow=21000+Flow                        OPTION 1 Add offset
+add_offset = -(np.min(Flow))
+sub_offset = cnumpy.sqrt(add_offset)
+print add_offset,sub_offset
+Flow[:]=[x + add_offset for x in Flow] #OPTION 1 Add offset
 #Flow[:]=[x * (-1) for x in Flow]      # OPTION 2 PERFORM NEGATIVE
-Flow=map(np.sqrt, Flow)
+Flow=map(cnumpy.sqrt, Flow)
 #Flow[:]=[x * (-1) for x in Flow]      # OPTION 2 PERFORM NEGATIVE 
-#Flow[:]=[x - 145 for x in Flow]      # OPTION 1 REMOVE OFFSET
+Flow[:]=[x - sub_offset for x in Flow]      # OPTION 1 REMOVE OFFSET
 plt.plot(t_time,Flow)
 plt.show()
 Flow[:]=[x * A for x in Flow]
@@ -102,10 +99,14 @@ print Flow[0]
 int_trapez=[scipy.integrate.trapz(Flow[i:i+2],dx=0.01) for i in range (lim)]
 int_simps=[scipy.integrate.simps(Flow[i:i+2],dx=0.01) for i in range (lim)]
 Volume=int_trapez
-plt.plot(t_time,int_trapez)
+plt.plot(t_time,Volume)
 plt.xlabel('t_time(second)')
 plt.ylabel('Volume(L)')
 plt.title('Volume vs t_time')
+plt.show()
+
+Volume = np.absolute(Volume)
+plt.plot(t_time,Volume)
 plt.show()
 
 #GENERATE FLOW-VOLUME LOOP
@@ -114,3 +115,9 @@ plt.plot(Volume,Flow)
 plt.xlabel('Volume')
 plt.ylabel('Flow')
 plt.title('Flow-Volume Loop')
+plt.show()
+
+#STORE THE GRAPH VALUES IN CSV FILE
+with open ("/home/pi/Documents/GeanyProject/graph1.csv",'wb') as f:
+    writer=csv.writer(f)
+    writer.writerows(izip(t_time,amplitude,Flow,Volume))
